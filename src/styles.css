@@ -4,6 +4,53 @@
 
 @custom-variant dark (&:is(.dark *));
 
+@theme {
+  --font-display: "Cormorant Garamond", serif;
+  --font-sans: "Inter", sans-serif;
+  --color-ink: oklch(0.14 0.005 60);
+  --color-charcoal: oklch(0.22 0.005 60);
+  --color-cream: oklch(0.96 0.015 85);
+  --color-gold: oklch(0.78 0.12 82);
+  --color-gold-soft: oklch(0.86 0.08 85);
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+@keyframes float-slow {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+@keyframes rise {
+  from { opacity: 0; transform: translateY(24px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@utility text-gold-shimmer {
+  background: linear-gradient(90deg, var(--color-gold-soft) 0%, var(--color-gold) 45%, #fff2c4 55%, var(--color-gold) 65%, var(--color-gold-soft) 100%);
+  background-size: 200% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: shimmer 6s linear infinite;
+}
+@utility animate-rise {
+  animation: rise 0.9s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+@utility animate-float {
+  animation: float-slow 6s ease-in-out infinite;
+}
+@utility glass-panel {
+  background: color-mix(in oklab, var(--color-charcoal) 55%, transparent);
+  backdrop-filter: blur(18px) saturate(140%);
+  border: 1px solid color-mix(in oklab, var(--color-gold) 22%, transparent);
+}
+@utility hairline {
+  background: linear-gradient(90deg, transparent, color-mix(in oklab, var(--color-gold) 60%, transparent), transparent);
+  height: 1px;
+}
+
 /*
  * Design system definition.
  *
