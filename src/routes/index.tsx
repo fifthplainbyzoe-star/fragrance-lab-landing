@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
-import bottleAsset from "@/assets/tfl-bottle.png.asset.json";
+
 
 export const Route = createFileRoute("/")({
   component: Index,
@@ -9,7 +9,7 @@ export const Route = createFileRoute("/")({
 const WHATSAPP_NUMBER = "27634595961";
 const WHATSAPP = `https://wa.me/${WHATSAPP_NUMBER}`;
 const PHONE = "+27 62 054 0240";
-const BOTTLE_IMAGE = bottleAsset.url;
+const BOTTLE_IMAGE = "/images/tfl-bottle.png";
 
 type Size = { label: string; price: number };
 const SIZES: Size[] = [
