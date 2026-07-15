@@ -1,46 +1,53 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
-import blackAuthority from "@/assets/black-authority.jpg";
-import velvetFire from "@/assets/velvet-fire.jpg";
-import glassWealth from "@/assets/glass-wealth.jpg";
+import { useEffect, useMemo, useState } from "react";
+import bottleAsset from "@/assets/tfl-bottle.png.asset.json";
 
 export const Route = createFileRoute("/")({
   component: Index,
 });
 
-const WHATSAPP = "https://wa.me/27634595961";
+const WHATSAPP_NUMBER = "27634595961";
+const WHATSAPP = `https://wa.me/${WHATSAPP_NUMBER}`;
 const PHONE = "+27 62 054 0240";
+const BOTTLE_IMAGE = bottleAsset.url;
+
+type Size = { label: string; price: number };
+const SIZES: Size[] = [
+  { label: "30ml", price: 280 },
+  { label: "50ml", price: 360 },
+];
+
+type DeliveryOption = { id: string; name: string; price: number; isPaxi: boolean };
+const DELIVERY_OPTIONS: DeliveryOption[] = [
+  { id: "paxi-small", name: "PAXI Small Bag", price: 60, isPaxi: true },
+  { id: "paxi-large", name: "PAXI Large Bag", price: 100, isPaxi: true },
+  { id: "courier", name: "Courier Guy", price: 150, isPaxi: false },
+  { id: "courier-large", name: "Courier Guy (Large)", price: 200, isPaxi: false },
+];
+
+const rand = (n: number) => `R${n}`;
 
 type Fragrance = {
   name: string;
-  image: string;
   available: boolean;
   tagline: string;
-  sizes?: { label: string; price: string }[];
   notes?: string[];
 };
 
 const FRAGRANCES: Fragrance[] = [
   {
     name: "Black Authority",
-    image: blackAuthority,
     available: true,
     tagline: "Commanding. Nocturnal. Unforgettable.",
-    sizes: [
-      { label: "30ml", price: "R280" },
-      { label: "50ml", price: "R360" },
-    ],
     notes: ["Rosewood", "Rich Oud", "Dark Amber"],
   },
   {
     name: "Velvet Fire",
-    image: velvetFire,
     available: false,
     tagline: "A slow burn wrapped in silk.",
   },
   {
     name: "Glass Wealth",
-    image: glassWealth,
     available: false,
     tagline: "Translucent opulence, poured in gold.",
   },
@@ -62,12 +69,12 @@ function Monogram({ className = "" }: { className?: string }) {
 
 function FragranceCard({ f, index }: { f: Fragrance; index: number }) {
   const [hover, setHover] = useState(false);
-  const message = encodeURIComponent(
-    `Hi, I'd like to order ${f.name} from The Fragrance Lab.`,
-  );
   const notify = encodeURIComponent(
     `Hi, please notify me when ${f.name} is available.`,
   );
+  const onOrder = () => {
+    window.dispatchEvent(new CustomEvent("tfl:order", { detail: { name: f.name } }));
+  };
   return (
     <article
       onMouseEnter={() => setHover(true)}
@@ -76,12 +83,12 @@ function FragranceCard({ f, index }: { f: Fragrance; index: number }) {
       style={{ animationDelay: `${index * 120}ms` }}
     >
       <div className="relative aspect-[4/5] overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-b from-black/0 via-black/10 to-black/60" />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/0 via-black/10 to-black/60 z-10 pointer-events-none" />
         <img
-          src={f.image}
+          src={BOTTLE_IMAGE}
           alt={`${f.name} luxury round perfume bottle`}
           width={1024}
-          height={1280}
+          height={1024}
           loading="lazy"
           className="h-full w-full object-cover transition-transform duration-[1400ms] group-hover:scale-[1.06]"
         />
@@ -132,9 +139,9 @@ function FragranceCard({ f, index }: { f: Fragrance; index: number }) {
           <p className="mt-2 font-sans text-sm text-[color:var(--color-cream)]/60">{f.tagline}</p>
         </div>
 
-        {f.sizes && (
+        {f.available && (
           <ul className="space-y-2">
-            {f.sizes.map((s) => (
+            {SIZES.map((s) => (
               <li
                 key={s.label}
                 className="flex items-center justify-between border-b border-[color:var(--color-gold)]/10 pb-2 font-sans text-sm text-[color:var(--color-cream)]/85"
@@ -142,27 +149,47 @@ function FragranceCard({ f, index }: { f: Fragrance; index: number }) {
                 <span className="uppercase tracking-[0.3em] text-xs text-[color:var(--color-cream)]/60">
                   {s.label}
                 </span>
-                <span className="font-display text-lg text-gold-shimmer">{s.price}</span>
+                <span className="font-display text-lg text-gold-shimmer">{rand(s.price)}</span>
               </li>
             ))}
           </ul>
         )}
 
-        <a
-          href={f.available ? `${WHATSAPP}?text=${message}` : `${WHATSAPP}?text=${notify}`}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="mt-auto inline-flex items-center justify-center gap-3 rounded-full border border-[color:var(--color-gold)]/60 px-6 py-3 font-sans text-[0.65rem] uppercase tracking-[0.5em] text-[color:var(--color-cream)] transition-all duration-500 hover:bg-[color:var(--color-gold)] hover:text-[color:var(--color-ink)] hover:tracking-[0.6em]"
-        >
-          {f.available ? "Order Now" : "Notify Me"}
-          <span aria-hidden>→</span>
-        </a>
+        {f.available ? (
+          <button
+            onClick={onOrder}
+            className="mt-auto inline-flex items-center justify-center gap-3 rounded-full border border-[color:var(--color-gold)]/60 px-6 py-3 font-sans text-[0.65rem] uppercase tracking-[0.5em] text-[color:var(--color-cream)] transition-all duration-500 hover:bg-[color:var(--color-gold)] hover:text-[color:var(--color-ink)] hover:tracking-[0.6em]"
+          >
+            Order Now
+            <span aria-hidden>→</span>
+          </button>
+        ) : (
+          <a
+            href={`${WHATSAPP}?text=${notify}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="mt-auto inline-flex items-center justify-center gap-3 rounded-full border border-[color:var(--color-gold)]/60 px-6 py-3 font-sans text-[0.65rem] uppercase tracking-[0.5em] text-[color:var(--color-cream)] transition-all duration-500 hover:bg-[color:var(--color-gold)] hover:text-[color:var(--color-ink)] hover:tracking-[0.6em]"
+          >
+            Notify Me
+            <span aria-hidden>→</span>
+          </a>
+        )}
       </div>
     </article>
   );
 }
 
 function Index() {
+  const [checkoutFragrance, setCheckoutFragrance] = useState<string | null>(null);
+  useEffect(() => {
+    const handler = (e: Event) => {
+      const detail = (e as CustomEvent<{ name: string }>).detail;
+      setCheckoutFragrance(detail.name);
+    };
+    window.addEventListener("tfl:order", handler);
+    return () => window.removeEventListener("tfl:order", handler);
+  }, []);
+
   const delivery = [
     { name: "PAXI Small Bag", price: "R60" },
     { name: "PAXI Large Bag", price: "R100" },
@@ -301,6 +328,221 @@ function Index() {
           </p>
         </div>
       </footer>
+      {checkoutFragrance && (
+        <CheckoutModal
+          fragranceName={checkoutFragrance}
+          onClose={() => setCheckoutFragrance(null)}
+        />
+      )}
+    </div>
+  );
+}
+
+function CheckoutModal({
+  fragranceName,
+  onClose,
+}: {
+  fragranceName: string;
+  onClose: () => void;
+}) {
+  const [name, setName] = useState("");
+  const [phone, setPhone] = useState("");
+  const [sizeLabel, setSizeLabel] = useState<string>(SIZES[0].label);
+  const [deliveryId, setDeliveryId] = useState<string>("");
+  const [paxiPoint, setPaxiPoint] = useState("");
+  const [error, setError] = useState("");
+
+  const size = useMemo(() => SIZES.find((s) => s.label === sizeLabel)!, [sizeLabel]);
+  const delivery = useMemo(
+    () => DELIVERY_OPTIONS.find((d) => d.id === deliveryId) ?? null,
+    [deliveryId],
+  );
+  const subtotal = size.price;
+  const deliveryFee = delivery?.price ?? 0;
+  const total = subtotal + deliveryFee;
+  const isPaxi = delivery?.isPaxi ?? false;
+
+  const submit = () => {
+    if (!name.trim() || !phone.trim()) {
+      setError("Please enter your name and phone number.");
+      return;
+    }
+    if (!delivery) {
+      setError("Please select a delivery method.");
+      return;
+    }
+    if (isPaxi && !paxiPoint.trim()) {
+      setError("Please enter your PAXI pickup point / PAXI number.");
+      return;
+    }
+    setError("");
+    const lines = [
+      "*New Order — The Fragrance Lab*",
+      "",
+      `*Name:* ${name}`,
+      `*Phone:* ${phone}`,
+      `*Fragrance:* ${fragranceName}`,
+      `*Bottle Size:* ${size.label}`,
+      `*Perfume Price:* ${rand(subtotal)}`,
+      `*Delivery Method:* ${delivery.name}`,
+      ...(isPaxi ? [`*PAXI Pickup Point:* ${paxiPoint}`] : []),
+      `*Delivery Cost:* ${rand(deliveryFee)}`,
+      `*Total Amount:* ${rand(total)}`,
+    ];
+    const url = `${WHATSAPP}?text=${encodeURIComponent(lines.join("\n"))}`;
+    window.open(url, "_blank", "noopener,noreferrer");
+  };
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-end justify-center bg-black/70 backdrop-blur-sm sm:items-center"
+      onClick={onClose}
+    >
+      <div
+        onClick={(e) => e.stopPropagation()}
+        className="relative max-h-[92vh] w-full max-w-lg overflow-y-auto rounded-t-3xl border border-[color:var(--color-gold)]/25 bg-[color:var(--color-ink)] p-8 sm:rounded-3xl"
+      >
+        <button
+          onClick={onClose}
+          aria-label="Close"
+          className="absolute right-5 top-5 text-[color:var(--color-cream)]/60 hover:text-[color:var(--color-gold)] transition"
+        >
+          ✕
+        </button>
+
+        <span className="font-sans text-[0.6rem] uppercase tracking-[0.6em] text-[color:var(--color-gold)]">
+          Checkout
+        </span>
+        <h3 className="mt-2 font-display text-3xl text-[color:var(--color-cream)]">
+          {fragranceName}
+        </h3>
+        <div className="hairline mt-4 w-16" />
+
+        <div className="mt-6 space-y-5">
+          <Field label="Full Name">
+            <input
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              className={inputCls}
+              placeholder="Your name"
+            />
+          </Field>
+          <Field label="Phone Number">
+            <input
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
+              className={inputCls}
+              placeholder="e.g. 082 123 4567"
+              inputMode="tel"
+            />
+          </Field>
+
+          <Field label="Bottle Size">
+            <div className="grid grid-cols-2 gap-3">
+              {SIZES.map((s) => {
+                const active = s.label === sizeLabel;
+                return (
+                  <button
+                    key={s.label}
+                    type="button"
+                    onClick={() => setSizeLabel(s.label)}
+                    className={`rounded-2xl border px-4 py-3 text-left transition ${
+                      active
+                        ? "border-[color:var(--color-gold)] bg-[color:var(--color-gold)]/10"
+                        : "border-[color:var(--color-gold)]/20 hover:border-[color:var(--color-gold)]/50"
+                    }`}
+                  >
+                    <div className="font-display text-lg text-[color:var(--color-cream)]">
+                      {s.label}
+                    </div>
+                    <div className="font-sans text-xs text-gold-shimmer">{rand(s.price)}</div>
+                  </button>
+                );
+              })}
+            </div>
+          </Field>
+
+          <Field label="Delivery Method">
+            <select
+              required
+              value={deliveryId}
+              onChange={(e) => setDeliveryId(e.target.value)}
+              className={inputCls}
+            >
+              <option value="" disabled>
+                Select delivery method
+              </option>
+              {DELIVERY_OPTIONS.map((d) => (
+                <option key={d.id} value={d.id}>
+                  {d.name} — {rand(d.price)}
+                  {d.id === "courier-large" ? "+" : ""}
+                </option>
+              ))}
+            </select>
+          </Field>
+
+          {isPaxi && (
+            <Field label="PAXI Pickup Point / PAXI Number">
+              <input
+                value={paxiPoint}
+                onChange={(e) => setPaxiPoint(e.target.value)}
+                className={inputCls}
+                placeholder="Enter your nearest PAXI pickup point / PAXI number"
+              />
+            </Field>
+          )}
+
+          <div className="mt-2 space-y-2 rounded-2xl border border-[color:var(--color-gold)]/15 bg-[color:var(--color-charcoal)]/50 p-5">
+            <Row label="Subtotal (Perfume)" value={rand(subtotal)} />
+            <Row label="Delivery Fee" value={rand(deliveryFee)} />
+            <div className="my-2 h-px bg-[color:var(--color-gold)]/15" />
+            <div className="flex items-baseline justify-between">
+              <span className="font-sans text-[0.65rem] uppercase tracking-[0.4em] text-[color:var(--color-cream)]/70">
+                Total
+              </span>
+              <span className="font-display text-2xl text-gold-shimmer">{rand(total)}</span>
+            </div>
+          </div>
+
+          {error && (
+            <p className="text-xs text-red-400" role="alert">
+              {error}
+            </p>
+          )}
+
+          <button
+            onClick={submit}
+            className="w-full rounded-full bg-[color:var(--color-gold)] px-6 py-4 font-sans text-[0.65rem] uppercase tracking-[0.5em] text-[color:var(--color-ink)] transition hover:tracking-[0.6em]"
+          >
+            Order via WhatsApp
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+const inputCls =
+  "w-full rounded-xl border border-[color:var(--color-gold)]/25 bg-[color:var(--color-charcoal)]/60 px-4 py-3 font-sans text-sm text-[color:var(--color-cream)] placeholder-[color:var(--color-cream)]/30 outline-none focus:border-[color:var(--color-gold)]/70 transition";
+
+function Field({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <label className="block">
+      <span className="mb-2 block font-sans text-[0.6rem] uppercase tracking-[0.4em] text-[color:var(--color-cream)]/60">
+        {label}
+      </span>
+      {children}
+    </label>
+  );
+}
+
+function Row({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="flex items-baseline justify-between">
+      <span className="font-sans text-xs uppercase tracking-[0.3em] text-[color:var(--color-cream)]/60">
+        {label}
+      </span>
+      <span className="font-display text-base text-[color:var(--color-cream)]">{value}</span>
     </div>
   );
 }
