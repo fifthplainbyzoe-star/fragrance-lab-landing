@@ -69,12 +69,12 @@ function Monogram({ className = "" }: { className?: string }) {
 
 function FragranceCard({ f, index }: { f: Fragrance; index: number }) {
   const [hover, setHover] = useState(false);
-  const message = encodeURIComponent(
-    `Hi, I'd like to order ${f.name} from The Fragrance Lab.`,
-  );
   const notify = encodeURIComponent(
     `Hi, please notify me when ${f.name} is available.`,
   );
+  const onOrder = () => {
+    window.dispatchEvent(new CustomEvent("tfl:order", { detail: { name: f.name } }));
+  };
   return (
     <article
       onMouseEnter={() => setHover(true)}
@@ -83,12 +83,12 @@ function FragranceCard({ f, index }: { f: Fragrance; index: number }) {
       style={{ animationDelay: `${index * 120}ms` }}
     >
       <div className="relative aspect-[4/5] overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-b from-black/0 via-black/10 to-black/60" />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/0 via-black/10 to-black/60 z-10 pointer-events-none" />
         <img
-          src={f.image}
+          src={BOTTLE_IMAGE}
           alt={`${f.name} luxury round perfume bottle`}
           width={1024}
-          height={1280}
+          height={1024}
           loading="lazy"
           className="h-full w-full object-cover transition-transform duration-[1400ms] group-hover:scale-[1.06]"
         />
@@ -139,9 +139,9 @@ function FragranceCard({ f, index }: { f: Fragrance; index: number }) {
           <p className="mt-2 font-sans text-sm text-[color:var(--color-cream)]/60">{f.tagline}</p>
         </div>
 
-        {f.sizes && (
+        {f.available && (
           <ul className="space-y-2">
-            {f.sizes.map((s) => (
+            {SIZES.map((s) => (
               <li
                 key={s.label}
                 className="flex items-center justify-between border-b border-[color:var(--color-gold)]/10 pb-2 font-sans text-sm text-[color:var(--color-cream)]/85"
@@ -149,21 +149,31 @@ function FragranceCard({ f, index }: { f: Fragrance; index: number }) {
                 <span className="uppercase tracking-[0.3em] text-xs text-[color:var(--color-cream)]/60">
                   {s.label}
                 </span>
-                <span className="font-display text-lg text-gold-shimmer">{s.price}</span>
+                <span className="font-display text-lg text-gold-shimmer">{rand(s.price)}</span>
               </li>
             ))}
           </ul>
         )}
 
-        <a
-          href={f.available ? `${WHATSAPP}?text=${message}` : `${WHATSAPP}?text=${notify}`}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="mt-auto inline-flex items-center justify-center gap-3 rounded-full border border-[color:var(--color-gold)]/60 px-6 py-3 font-sans text-[0.65rem] uppercase tracking-[0.5em] text-[color:var(--color-cream)] transition-all duration-500 hover:bg-[color:var(--color-gold)] hover:text-[color:var(--color-ink)] hover:tracking-[0.6em]"
-        >
-          {f.available ? "Order Now" : "Notify Me"}
-          <span aria-hidden>→</span>
-        </a>
+        {f.available ? (
+          <button
+            onClick={onOrder}
+            className="mt-auto inline-flex items-center justify-center gap-3 rounded-full border border-[color:var(--color-gold)]/60 px-6 py-3 font-sans text-[0.65rem] uppercase tracking-[0.5em] text-[color:var(--color-cream)] transition-all duration-500 hover:bg-[color:var(--color-gold)] hover:text-[color:var(--color-ink)] hover:tracking-[0.6em]"
+          >
+            Order Now
+            <span aria-hidden>→</span>
+          </button>
+        ) : (
+          <a
+            href={`${WHATSAPP}?text=${notify}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="mt-auto inline-flex items-center justify-center gap-3 rounded-full border border-[color:var(--color-gold)]/60 px-6 py-3 font-sans text-[0.65rem] uppercase tracking-[0.5em] text-[color:var(--color-cream)] transition-all duration-500 hover:bg-[color:var(--color-gold)] hover:text-[color:var(--color-ink)] hover:tracking-[0.6em]"
+          >
+            Notify Me
+            <span aria-hidden>→</span>
+          </a>
+        )}
       </div>
     </article>
   );
