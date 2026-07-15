@@ -1,46 +1,53 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
-import blackAuthority from "@/assets/black-authority.jpg";
-import velvetFire from "@/assets/velvet-fire.jpg";
-import glassWealth from "@/assets/glass-wealth.jpg";
+import { useMemo, useState } from "react";
+import bottleAsset from "@/assets/tfl-bottle.png.asset.json";
 
 export const Route = createFileRoute("/")({
   component: Index,
 });
 
-const WHATSAPP = "https://wa.me/27634595961";
+const WHATSAPP_NUMBER = "27634595961";
+const WHATSAPP = `https://wa.me/${WHATSAPP_NUMBER}`;
 const PHONE = "+27 62 054 0240";
+const BOTTLE_IMAGE = bottleAsset.url;
+
+type Size = { label: string; price: number };
+const SIZES: Size[] = [
+  { label: "30ml", price: 280 },
+  { label: "50ml", price: 360 },
+];
+
+type DeliveryOption = { id: string; name: string; price: number; isPaxi: boolean };
+const DELIVERY_OPTIONS: DeliveryOption[] = [
+  { id: "paxi-small", name: "PAXI Small Bag", price: 60, isPaxi: true },
+  { id: "paxi-large", name: "PAXI Large Bag", price: 100, isPaxi: true },
+  { id: "courier", name: "Courier Guy", price: 150, isPaxi: false },
+  { id: "courier-large", name: "Courier Guy (Large)", price: 200, isPaxi: false },
+];
+
+const rand = (n: number) => `R${n}`;
 
 type Fragrance = {
   name: string;
-  image: string;
   available: boolean;
   tagline: string;
-  sizes?: { label: string; price: string }[];
   notes?: string[];
 };
 
 const FRAGRANCES: Fragrance[] = [
   {
     name: "Black Authority",
-    image: blackAuthority,
     available: true,
     tagline: "Commanding. Nocturnal. Unforgettable.",
-    sizes: [
-      { label: "30ml", price: "R280" },
-      { label: "50ml", price: "R360" },
-    ],
     notes: ["Rosewood", "Rich Oud", "Dark Amber"],
   },
   {
     name: "Velvet Fire",
-    image: velvetFire,
     available: false,
     tagline: "A slow burn wrapped in silk.",
   },
   {
     name: "Glass Wealth",
-    image: glassWealth,
     available: false,
     tagline: "Translucent opulence, poured in gold.",
   },
